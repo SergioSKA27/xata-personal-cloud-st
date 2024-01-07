@@ -1,5 +1,6 @@
 import streamlit as st
 from st_xatadb_connection import XataConnection
+import uuid
 
 st.set_page_config(
     page_title="My personal cloud with Xata",
@@ -22,14 +23,23 @@ def upload_file(file,description):
         xata.delete("files",data["id"])
         st.error(f"Failed to upload file: {e}")
 
-def render_img(file):
+def render_img(file: dict):
     img_types = ["png","jpg","jpeg","gif","bmp","svg"]
 
-    if file["content"]["type"] in img_types:
-        st.image(file["content"]["url"])
+    if any(img_type in file['content']['mediaType'] for img_type in img_types):
+        xata.get("files",file["id"],columns=["content.base64Content"])
+        st.image(file['content']['url'],use_column_width=True)
+
+def render_pdf(file: dict):
+    #data = xata.get_file("files",file["id"],"content")
+    #st.write(data)
+    if "pdf" in file['content']['mediaType']:
+        st.markdown(f'<iframe src="{file["content"]["url"]}" width="100%" height="400"></iframe>',unsafe_allow_html=True)
 
 
 
+
+xata.query("files")
 st.markdown('''
 <div style="background-color:#EED7F9;padding:10px;border-radius:10px;text-align:center;">
     <h1 style="color:#6C3483;font-size:1.5rem;">
@@ -46,13 +56,23 @@ cols = st.columns([0.3,0.4,0.3])
 with cols[1]:
     file = st.file_uploader("Upload file")
     description = st.text_area("Description")
-
+    if file is not None:
+        st.write('File type: ',file.type)
+        st.write(file.name)
     if st.button("Upload"):
         if file is not None:
-            st.write('File type: ',file.type)
-            st.write(file.name)
             upload_file(file,description)
 
 
+q = xata.query("files")
+st.write(q)
 
-st.write(xata.query("files"))
+st.write()
+
+st.write("Files:")
+cols = st.columns(3)
+with cols[0]:
+    c0 = q['records'][0]
+    render_pdf(c0)
+    if st.button("Download"):
+        st.download_button("Download",c0["content"]["url"],file_name=str(uuid.uuid4()),mime=c0["content"]["mediaType"])
