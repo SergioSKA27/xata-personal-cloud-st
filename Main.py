@@ -10,58 +10,61 @@ st.set_page_config(
 
 xata = st.connection('xata',type=XataConnection)
 
-def upload_file(file,description):
+def upload_file(file,description: str=""):
     try:
-        data = xata.insert("files",{"desc": description})
+        if 'text' not in file.type:
+            data = xata.insert("files",{"desc": description})
+        else:
+            content = file.read().decode("utf-8")
+            data = xata.insert("files",{"desc": description,
+            "text_file": content, "text_file_type": file.type, "text_file_name": file.name})
     except Exception as e:
         st.error(f"Failed to create file: {e}")
 
     try:
-        xata.upload_file("files",data["id"],"content",file.read(),content_type=file.type)
-        xata.update("files",data["id"],{"content.name": file.name})
+        if 'text' not in file.type:
+            xata.upload_file("files",data["id"],"content",file.read(),content_type=file.type)
+            xata.update("files",data["id"],{"content.name": file.name})
     except Exception as e:
         xata.delete("files",data["id"])
         st.error(f"Failed to upload file: {e}")
 
 def render_img(file: dict):
     st.image(file['content']['url'],use_column_width=True,caption=file['desc'])
+    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_pdf(file: dict):
     st.markdown(f'<iframe src="{file["content"]["url"]}" width="100%" height="400"></iframe>',unsafe_allow_html=True)
 
 def render_video(file: dict):
-    video_types = ["mp4","webm","ogg"]
-
-    if any(video_type in file['content']['mediaType'] for video_type in video_types):
-        st.video(file['content']['url'],format=file['content']['mediaType'])
+    st.video(file['content']['url'],format=file['content']['mediaType'])
+    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_audio(file: dict):
-    audio_types = ["mp3","wav","ogg",]
-
-    if any(audio_type in file['content']['mediaType'] for audio_type in audio_types):
-        data = xata.get("files",file["id"],columns=["content.base64Content"])
-        st.audio(data['content']['base64Content'],format=file['content']['mediaType'])
+    st.audio(file['content']['url'],format=file['content']['mediaType'])
 
 def render_text(file: dict):
-    text_types = ["txt","csv","json","xml","html","css","js","py","java","c","cpp","cs","php","sql","sh","bat","md"]
+    st.code(file['text_file'],language=file['text_file_type'].split('/')[1])
 
-    if any(text_type in file['content']['mediaType'] for text_type in text_types):
-        data = xata.get("files",file["id"],columns=["content.base64Content"])
-        st.code(data['content']['base64Content'],language=file['content']['mediaType'])
 
 def render_file(file: dict):
-    if file['content']['mediaType'] == "application/octet-stream":
-        st.write("File type not supported")
-    elif file['content']['mediaType'] == "application/pdf":
-        render_pdf(file)
-    elif file['content']['mediaType'] == "image/png" or file['content']['mediaType'] == "image/jpg" or file['content']['mediaType'] == "image/jpeg" or file['content']['mediaType'] == "image/gif" or file['content']['mediaType'] == "image/bmp" or file['content']['mediaType'] == "image/svg+xml":
-        render_img(file)
-    elif file['content']['mediaType'] == "video/mp4" or file['content']['mediaType'] == "video/webm" or file['content']['mediaType'] == "video/ogg":
-        render_video(file)
-    elif file['content']['mediaType'] == "audio/mp3" or file['content']['mediaType'] == "audio/wav" or file['content']['mediaType'] == "audio/ogg":
-        render_audio(file)
-    else:
-        render_text(file)
+    try:
+
+        if "text_file" in file and file['text_file'] is not None:
+            render_text(file)
+        elif file['content']['mediaType'] == "application/pdf":
+            render_pdf(file)
+        elif file['content']['mediaType'] == "image/png" or file['content']['mediaType'] == "image/jpg" or file['content']['mediaType'] == "image/jpeg" or file['content']['mediaType'] == "image/gif" or file['content']['mediaType'] == "image/bmp" or file['content']['mediaType'] == "image/svg+xml":
+            render_img(file)
+        elif file['content']['mediaType'] == "video/mp4" or file['content']['mediaType'] == "video/webm" or file['content']['mediaType'] == "video/ogg":
+            render_video(file)
+        elif file['content']['mediaType'] == "audio/mp3" or file['content']['mediaType'] == "audio/wav" or file['content']['mediaType'] == "audio/ogg":
+            render_audio(file)
+        else:
+            st.write("File type not supported")
+    except Exception as e:
+        st.error("Failed to render file")
+        print(e)
 
 def render_files(files: list):
     cols = st.columns(3)
