@@ -191,7 +191,7 @@ def app():
     st.markdown(
         """
     <div style="text-align:center;display:flex;flex-direction:row;align-items:center;justify-content:center;">
-        <h1 style="color:#6C3483;font-size:1.5rem;">
+        <h1 style="color:#6C3483;font-size:2.5rem;">
         MY PERSONAL CLOUD WITH XATA
         </h1>
         <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="currentColor" class="bi bi-cloud-haze2" viewBox="0 0 16 16">
@@ -202,7 +202,7 @@ def app():
         unsafe_allow_html=True,
     )
 
-    cols = st.columns([0.3, 0.4, 0.3])
+    cols = st.columns([0.2, 0.6, 0.2])
 
     with cols[1]:
         file = st.file_uploader("Upload file", label_visibility="hidden")
@@ -229,6 +229,7 @@ def app():
 
     colsr = st.columns([0.9, 0.1])
     colsr[0].subheader("Files")
+    colsr[0].caption("Page " + str(st.session_state.page + 1))
     if colsr[1].button("🔄", use_container_width=True):
         st.session_state.files = [
             xata.query(
