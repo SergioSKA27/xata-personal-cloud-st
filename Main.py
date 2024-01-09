@@ -122,7 +122,7 @@ def render_files(files: list):
 
 def app():
     st.markdown('''
-    <div style="background-color:#EED7F9;padding:10px;border-radius:10px;text-align:center;">
+    <div style="text-align:center;display:flex;flex-direction:row;align-items:center;justify-content:center;">
         <h1 style="color:#6C3483;font-size:1.5rem;">
         MY PERSONAL CLOUD WITH XATA
         </h1>
@@ -135,7 +135,7 @@ def app():
     cols = st.columns([0.3,0.4,0.3])
 
     with cols[1]:
-        file = st.file_uploader("Upload file")
+        file = st.file_uploader("Upload file",label_visibility="hidden")
         if st.checkbox("Add description"):
             description = st.text_area("Description")
         else:
@@ -143,7 +143,7 @@ def app():
         if file is not None:
             st.write('File type: ',file.type)
             st.write(file.name)
-        if st.button("Upload"):
+        if st.button("Upload 🌩️",disabled=True):
             if file is not None:
                 upload_file(file,description)
 
