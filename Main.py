@@ -1,6 +1,5 @@
 import streamlit as st
 from st_xatadb_connection import XataConnection
-import uuid
 
 st.set_page_config(
     page_title="My personal cloud with Xata",
@@ -19,24 +18,73 @@ def upload_file(file,description):
 
     try:
         xata.upload_file("files",data["id"],"content",file.read(),content_type=file.type)
+        xata.update("files",data["id"],{"content.name": file.name})
     except Exception as e:
         xata.delete("files",data["id"])
         st.error(f"Failed to upload file: {e}")
 
 def render_img(file: dict):
-    img_types = ["png","jpg","jpeg","gif","bmp","svg"]
-
-    if any(img_type in file['content']['mediaType'] for img_type in img_types):
-        xata.get("files",file["id"],columns=["content.base64Content"])
-        st.image(file['content']['url'],use_column_width=True)
+    st.image(file['content']['url'],use_column_width=True,caption=file['desc'])
 
 def render_pdf(file: dict):
-    #data = xata.get_file("files",file["id"],"content")
-    #st.write(data)
-    if "pdf" in file['content']['mediaType']:
-        st.markdown(f'<iframe src="{file["content"]["url"]}" width="100%" height="400"></iframe>',unsafe_allow_html=True)
+    st.markdown(f'<iframe src="{file["content"]["url"]}" width="100%" height="400"></iframe>',unsafe_allow_html=True)
 
+def render_video(file: dict):
+    video_types = ["mp4","webm","ogg"]
 
+    if any(video_type in file['content']['mediaType'] for video_type in video_types):
+        st.video(file['content']['url'],format=file['content']['mediaType'])
+
+def render_audio(file: dict):
+    audio_types = ["mp3","wav","ogg",]
+
+    if any(audio_type in file['content']['mediaType'] for audio_type in audio_types):
+        data = xata.get("files",file["id"],columns=["content.base64Content"])
+        st.audio(data['content']['base64Content'],format=file['content']['mediaType'])
+
+def render_text(file: dict):
+    text_types = ["txt","csv","json","xml","html","css","js","py","java","c","cpp","cs","php","sql","sh","bat","md"]
+
+    if any(text_type in file['content']['mediaType'] for text_type in text_types):
+        data = xata.get("files",file["id"],columns=["content.base64Content"])
+        st.code(data['content']['base64Content'],language=file['content']['mediaType'])
+
+def render_file(file: dict):
+    if file['content']['mediaType'] == "application/octet-stream":
+        st.write("File type not supported")
+    elif file['content']['mediaType'] == "application/pdf":
+        render_pdf(file)
+    elif file['content']['mediaType'] == "image/png" or file['content']['mediaType'] == "image/jpg" or file['content']['mediaType'] == "image/jpeg" or file['content']['mediaType'] == "image/gif" or file['content']['mediaType'] == "image/bmp" or file['content']['mediaType'] == "image/svg+xml":
+        render_img(file)
+    elif file['content']['mediaType'] == "video/mp4" or file['content']['mediaType'] == "video/webm" or file['content']['mediaType'] == "video/ogg":
+        render_video(file)
+    elif file['content']['mediaType'] == "audio/mp3" or file['content']['mediaType'] == "audio/wav" or file['content']['mediaType'] == "audio/ogg":
+        render_audio(file)
+    else:
+        render_text(file)
+
+def render_files(files: list):
+    cols = st.columns(3)
+    st.divider()
+    cols1 = st.columns(3)
+    if len(files)  > 0:
+        with cols[0]:
+            render_file(files[0])
+    if len(files)  > 1:
+        with cols[1]:
+            render_file(files[1])
+    if len(files)  > 2:
+        with cols[2]:
+            render_file(files[2])
+    if len(files)  > 3:
+        with cols1[0]:
+            render_file(files[3])
+    if len(files)  > 4:
+        with cols1[1]:
+            render_file(files[4])
+    if len(files)  > 5:
+        with cols1[2]:
+            render_file(files[5])
 
 
 xata.query("files")
@@ -63,16 +111,12 @@ with cols[1]:
         if file is not None:
             upload_file(file,description)
 
-
-q = xata.query("files")
-st.write(q)
+if 'files' not in st.session_state:
+    st.session_state.files = xata.query("files",{"page":{"size":6}})
+st.write(st.session_state.files)
 
 st.write()
 
 st.write("Files:")
-cols = st.columns(3)
-with cols[0]:
-    c0 = q['records'][0]
-    render_pdf(c0)
-    if st.button("Download"):
-        st.download_button("Download",c0["content"]["url"],file_name=str(uuid.uuid4()),mime=c0["content"]["mediaType"])
+
+render_files(st.session_state.files['records'])
