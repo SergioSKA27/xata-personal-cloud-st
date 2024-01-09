@@ -37,8 +37,7 @@ def upload_file(file,description: str=""): # This Uploads a file to Xata
 
 def render_img(file: dict):
     st.image(file['content']['url'],use_column_width=True,caption=file['desc'])
-    with st.spinner("Downloading file..."):
-        st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
+    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_pdf(file: dict):
     st.markdown(f'<iframe src="{file["content"]["url"]}" width="100%" height="400"></iframe>',unsafe_allow_html=True)
@@ -47,28 +46,18 @@ def render_pdf(file: dict):
 def render_video(file: dict):
     st.video(file['content']['url'],format=file['content']['mediaType'])
     st.caption(file['desc'])
-    with st.spinner("Downloading file..."):
-        st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
+    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_audio(file: dict):
     st.audio(file['content']['url'],format=file['content']['mediaType'])
     st.caption(file['desc'])
-    with st.spinner("Downloading file..."):
-        st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
+    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_text(file: dict):
     with st.expander("View text"):
         st.code(file['text_file'],language=file['text_file_type'].split('/')[1])
     st.caption(file['desc'])
-    with st.spinner("Downloading file..."):
-        st.download_button("Download",file['text_file'],file['text_file_name'],file['text_file_type'])
-
-def render_markdown(file: dict):
-    with st.expander("View markdown"):
-        st.markdown(file['text_file'])
-    st.caption(file['desc'])
-    with st.spinner("Downloading file..."):
-        st.download_button("Download",file['text_file'],file['text_file_name'],file['text_file_type'])
+    st.download_button("Download",file['text_file'],file['text_file_name'],file['text_file_type'])
 
 def render_dataframe(file: dict):
     try:
@@ -78,16 +67,13 @@ def render_dataframe(file: dict):
         print(e)
 
     st.caption(file['desc'])
-    with st.spinner("Downloading file..."):
-        st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
+    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_file(file: dict):
     try:
 
         if "text_file" in file and file['text_file'] is not None:
             st.write(file['text_file_name'])
-            if file['text_file_type'] == "text/markdown":
-                render_markdown(file)
             render_text(file)
         elif file['content']['mediaType'] == "application/pdf":
             st.write(file['content']['name'])
