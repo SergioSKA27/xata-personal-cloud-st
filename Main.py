@@ -42,9 +42,11 @@ def render_video(file: dict):
 
 def render_audio(file: dict):
     st.audio(file['content']['url'],format=file['content']['mediaType'])
+    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_text(file: dict):
     st.code(file['text_file'],language=file['text_file_type'].split('/')[1])
+    st.download_button("Download",file['text_file'],file['text_file_name'],file['text_file_type'])
 
 
 def render_file(file: dict):
@@ -58,10 +60,11 @@ def render_file(file: dict):
             render_img(file)
         elif file['content']['mediaType'] == "video/mp4" or file['content']['mediaType'] == "video/webm" or file['content']['mediaType'] == "video/ogg":
             render_video(file)
-        elif file['content']['mediaType'] == "audio/mp3" or file['content']['mediaType'] == "audio/wav" or file['content']['mediaType'] == "audio/ogg":
+        elif file['content']['mediaType'] == "audio/mp3" or file['content']['mediaType'] == "audio/wav" or file['content']['mediaType'] == "audio/ogg" or "audio/mpeg" in file['content']['mediaType']:
             render_audio(file)
         else:
-            st.write("File type not supported")
+            st.write("File type not supported yet :(")
+            st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
     except Exception as e:
         st.error("Failed to render file")
         print(e)
