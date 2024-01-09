@@ -166,7 +166,6 @@ def render_file(file: dict):
 
 def render_files(files: list):
     cols = st.columns(3)
-    st.divider()
     cols1 = st.columns(3)
     if len(files) > 0:
         with cols[0]:
@@ -229,6 +228,7 @@ def app():
         st.session_state.page = 0
 
     colsr = st.columns([0.9, 0.1])
+    colsr[0].subheader("Files")
     if colsr[1].button("🔄", use_container_width=True):
         st.session_state.files = [
             xata.query(
@@ -238,8 +238,6 @@ def app():
         st.session_state.page = 0
         st.rerun()
 
-    st.subheader("My files")
-    st.divider()
     render_files(st.session_state.files[st.session_state.page]["records"])
 
     colsp = st.columns([0.8, 0.1, 0.1])
@@ -269,5 +267,3 @@ if __name__ == "__main__":
     app()
     st.divider()
     st.caption("Made with ❤️ by Sergio Lopez Martinez")
-
-st.write(st.session_state.files[st.session_state.page]["records"])
