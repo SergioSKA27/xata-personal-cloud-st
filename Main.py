@@ -31,22 +31,31 @@ def upload_file(file,description: str=""):
 
 def render_img(file: dict):
     st.image(file['content']['url'],use_column_width=True,caption=file['desc'])
-    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
+    with st.spinner("Downloading file..."):
+        st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_pdf(file: dict):
     st.markdown(f'<iframe src="{file["content"]["url"]}" width="100%" height="400"></iframe>',unsafe_allow_html=True)
+    st.caption(file['desc'])
 
 def render_video(file: dict):
     st.video(file['content']['url'],format=file['content']['mediaType'])
-    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
+    st.caption(file['desc'])
+    with st.spinner("Downloading file..."):
+        st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_audio(file: dict):
     st.audio(file['content']['url'],format=file['content']['mediaType'])
-    st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
+    st.caption(file['desc'])
+    with st.spinner("Downloading file..."):
+        st.download_button("Download",file['content']['url'],file['content']['name'],file['content']['mediaType'])
 
 def render_text(file: dict):
-    st.code(file['text_file'],language=file['text_file_type'].split('/')[1])
-    st.download_button("Download",file['text_file'],file['text_file_name'],file['text_file_type'])
+    with st.expander("View text"):
+        st.code(file['text_file'],language=file['text_file_type'].split('/')[1])
+    st.caption(file['desc'])
+    with st.spinner("Downloading file..."):
+        st.download_button("Download",file['text_file'],file['text_file_name'],file['text_file_type'])
 
 
 def render_file(file: dict):
