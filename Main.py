@@ -10,9 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
 xata = st.connection("xata", type=XataConnection)  # Set Xata connection
-
 
 def upload_file(file, description: str = ""):  # This Uploads a file to Xata
     try:
@@ -44,7 +42,6 @@ def upload_file(file, description: str = ""):  # This Uploads a file to Xata
 
     st.success("File uploaded successfully")
 
-
 def render_img(file: dict):
     st.image(file["content"]["url"], use_column_width=True, caption=file["desc"])
     st.download_button(
@@ -54,14 +51,12 @@ def render_img(file: dict):
         file["content"]["mediaType"],
     )
 
-
 def render_pdf(file: dict):
     st.markdown(
         f'<iframe src="{file["content"]["url"]}" width="100%" height="400"></iframe>',
         unsafe_allow_html=True,
     )
     st.caption(file["desc"])
-
 
 def render_video(file: dict):
     st.video(file["content"]["url"], format=file["content"]["mediaType"])
@@ -73,7 +68,6 @@ def render_video(file: dict):
         file["content"]["mediaType"],
     )
 
-
 def render_audio(file: dict):
     st.audio(file["content"]["url"], format=file["content"]["mediaType"])
     st.caption(file["desc"])
@@ -84,7 +78,6 @@ def render_audio(file: dict):
         file["content"]["mediaType"],
     )
 
-
 def render_text(file: dict):
     with st.expander("View text"):
         st.code(file["text_file"], language=file["text_file_type"].split("/")[1])
@@ -92,7 +85,6 @@ def render_text(file: dict):
     st.download_button(
         "Download", file["text_file"], file["text_file_name"], file["text_file_type"]
     )
-
 
 def render_dataframe(file: dict):
     try:
@@ -108,7 +100,6 @@ def render_dataframe(file: dict):
         file["content"]["name"],
         file["content"]["mediaType"],
     )
-
 
 def render_file(file: dict):
     try:
@@ -163,7 +154,6 @@ def render_file(file: dict):
         st.error("Failed to render file")
         print(e)
 
-
 def render_files(files: list):
     cols = st.columns(3)
     cols1 = st.columns(3)
@@ -185,7 +175,6 @@ def render_files(files: list):
     if len(files) > 5:
         with cols1[2]:
             render_file(files[5])
-
 
 def app():
     st.markdown(
@@ -213,7 +202,7 @@ def app():
         if file is not None:
             st.write("File type: ", file.type)
             st.write(file.name)
-        if st.button("Upload 🌩️", disabled=True):
+        if st.button("Upload 🌩️", disabled=True): # Enable this when use you use your credentials
             if file is not None:
                 upload_file(file, description)
 
