@@ -213,7 +213,7 @@ def app():
         if file is not None:
             st.write("File type: ", file.type)
             st.write(file.name)
-        if st.button("Upload 🌩️", disabled=False):
+        if st.button("Upload 🌩️", disabled=True):
             if file is not None:
                 upload_file(file, description)
 
